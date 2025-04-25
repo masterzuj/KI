@@ -1,5 +1,7 @@
 # KI
 
+        git clone https://github.com/masterzuj/KI.git
+
 
 ![Screenshot 2025-04-25 021727](https://github.com/user-attachments/assets/c2c2dc6a-a1ec-41a5-9100-9800455f558f)
 
