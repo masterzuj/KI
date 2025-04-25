@@ -11,3 +11,8 @@ Replace your key and model in line:
 
                  $.ajax({
                         url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=[PASTE YOUR GOOGLE API KEY]', //
+
+Visit: 
+                https://aistudio.google.com/
+for more information.
+
