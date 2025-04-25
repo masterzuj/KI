@@ -1,0 +1,275 @@
+  <meta charset="UTF-8">
+
+<title>KI</title>
+<script src="jquery-3.7.1.js"></script>
+
+<style>
+	
+	body{
+		font-family: Courier New;
+		filter: sepia(20%);
+	}
+		
+	.answer{
+		
+		padding: 10px;
+		font-size: 20px;
+		background-color: lightgray;
+		border-radius: 5px;
+		margin: 10px;
+		
+	}
+	
+	.quest{
+		
+		padding: 10px;
+		font-size: 20px;
+		background-color: lightblue;
+		border-radius: 5px;
+		margin: 10px;
+		
+	}
+	
+	#outputText{
+		position: fixed;
+		bottom: 80px;
+		width: 400px;
+		height: 800px; /* Set a fixed height for the container */
+  		overflow-y: scroll;
+		border: 2px solid skyblue; 
+		border-radius: 10px;
+	}
+	
+	#KIpng{
+		height: 80px; 
+		width: 80px; 
+		position: fixed; 
+		bottom: 880px; 
+		left: 170px;
+	}
+	
+	#KIinput{
+		position: fixed; 
+		bottom: 20px;
+		border: 2px solid skyblue; 
+		border-radius: 10px;
+		font-family: Courier New;
+	}
+	
+	.KIinputtext{
+		font-size: 22px; 
+		font-family: Courier New;
+		border-radius: 10px;
+	}
+	
+	.KIinputsubmit{
+		font-size: 22px; 
+		background-color: lightblue; 
+		font-family: Courier New;
+		border-radius: 10px;
+	}
+	
+	#impressum{
+		font-size: 17px; 
+		background-color: white;
+	}
+</style>
+
+
+<a href="https://zujkov.com/KI"><img src="KI.png" id="KIpng"/></a>
+
+
+	
+	<div id="outputText"></div>
+
+	<div id="KIinput">
+		<input type="text" id="userInput" placeholder="Ihre Frage?" class="KIinputtext" autofocus/>
+		<button id="submitButton" class="KIinputsubmit" >Fragen!</button>
+	</div>
+
+<script>
+$(document).ready(function() {
+	
+	
+	
+	
+	
+	if ('webkitSpeechRecognition' in window) {
+      const recognition = new webkitSpeechRecognition();
+      recognition.lang = ''; // Sprache auf Deutsch setzen
+      recognition.continuous = false; // Kontinuierliche Erkennung deaktivieren
+      recognition.interimResults = false; // Nur endgültige Ergebnisse ausgeben
+
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('output').value = transcript;
+		  document.getElementById('status_div').innerHTML = "";
+      };
+
+      recognition.onerror = function(event) {
+        console.error('Fehler bei der Spracherkennung: ', event.error);
+      };
+
+      document.getElementById('start').onclick = function() {
+        recognition.start();
+		  
+		  document.getElementById('status_div').innerHTML = "<img src='free-microphone.webp' style='height: 100px;'/>";
+      };
+    } else {
+      console.log("Speech Recognition API ist in diesem Browser nicht verfügbar.");
+    }
+
+    // Funktion zur Sprachausgabe hinzufügen
+    document.getElementById('speak').onclick = function() {
+		
+		document.getElementById('status_div').innerHTML = "<img src='speech-bubble.jpg' style='height: 100px;'/>";
+		
+      const text = document.getElementById('output').value;
+		
+		
+		
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = ''; // Sprache auf Deutsch setzen
+        speechSynthesis.speak(utterance);
+		  
+		  	setTimeout(() => {
+ 				document.getElementById('status_div').innerHTML = "";
+			}, "1000");
+		  
+		  
+      } else {
+        console.log("Speech Synthesis API ist in diesem Browser nicht verfügbar.");
+      }
+    }
+	
+	document.getElementById('project').onclick = function() {
+      var text_project = document.getElementById('output').value;
+	  document.getElementById('project_div').innerHTML = text_project;
+		$('#userInput').val(text_project);
+    }
+	
+	
+	
+	
+	
+	
+	
+	
+	
+    $('#submitButton').click(function() {
+        var userInput = $('#userInput').val();
+        callBackendForGemini(userInput);
+    });
+
+    $('#userInput').on('keypress', function(event) {
+        if (event.which === 13) { // Enter key pressed
+            $('#submitButton').click();
+        }
+    });
+
+    function callBackendForGemini(prompt) {
+
+		$('#userInput').val("");
+		
+		$('#outputText').prepend("<div class='quest'>" + prompt + "</div>");
+		
+        $.ajax({
+            url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=[PASTE YOUR GOOGLE API KEY]', //
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ //
+                "contents": [
+                    {
+                        "parts": [
+                            {
+                                "text": prompt // 
+                            }
+                        ]
+                    }
+                ],
+                "generationConfig": {
+                    "maxOutputTokens": 200,
+                    "temperature": 0.8,
+                    "topP": 0.9
+                }
+            }),
+            success: function(data) {
+                console.log('Erfolg:', data);
+                //$('#outputText').text(JSON.stringify(data, null, 2)); // Zeigt die Antwort formatiert an
+				//$('#outputText').text(JSON.stringify(data, null, 2)); // Zeigt die Antwort formatiert an
+				
+				$('#outputText').prepend("<div class='answer'>" + data.candidates[0].content.parts[0].text + "</div>");
+				
+				
+				
+				
+				
+				
+					const text2 = data.candidates[0].content.parts[0].text;
+		
+		
+		
+				  if ('speechSynthesis' in window) {
+					const utterance2 = new SpeechSynthesisUtterance(text2);
+					utterance2.lang = ''; // Sprache auf Deutsch setzen
+					
+					  
+					  //speechSynthesis.speak(utterance2);
+				  }
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+            },
+            error: function(error) {
+                console.error('Fehler:', error);
+                $('#outputText').prepend('Fehler bei der Anfrage: ' + error.responseText);
+            }
+        });
+		//$("#outputText").scrollTop(0);
+    }
+	
+	
+});
+</script>
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="de">
+
+<body>
+<div id="project_div" style="width: 100%; text-align: center; font-size: 100px; color: lightblue;"></div>
+
+<div id="status_div" style="width: 100%; text-align: center; font-size: 100px; color: lightblue;"></div>
+	
+<div style="position: fixed; bottom: 0px; right: 0px; text-align: center; font-size: 100px; font-size: 30px;">
+  <textarea id="output" rows="10" cols="20"></textarea>
+  <br/>
+  <button id="start" style="color: lightblue;">⏺</button>
+  <button id="speak">🗨️</button>
+  <button id="project">⬆️</button>
+  <br/>
+</div> 
+
+  <script>
+    // Überprüfen, ob die Spracherkennungs-API im Browser verfügbar ist
+    
+  </script>
+</body>
+</html>
+
+
+
+
+
